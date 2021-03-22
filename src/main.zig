@@ -3,13 +3,14 @@ const App = @import("engine/app.zig").App;
 const ShaderProgram = @import("engine/shader.zig").ShaderProgram;
 const c = @import("c.zig").c;
 
-
+const math = @import("zlm");
 pub fn main() anyerror!void {
     std.debug.print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",.{});
     var app = try App.create("Tesasdst", 640, 480);
     defer app.destroy();
 
-    
+    const ts = math.Mat4.identity;
+    std.debug.print("a: {}", .{ts});
     var default = try ShaderProgram.create("../shaders/default");
     defer default.destroy();
 
