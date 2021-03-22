@@ -90,12 +90,8 @@ fn logGlInfoLog(object_kind: GlInfoLogKind, object: c_uint) void {
         .program => c.glGetProgramInfoLog(object, info_log.len, &info_log_len, &info_log),
     }
     if (info_log_len > 0 and info_log[@intCast(usize, info_log_len) - 1] == '\n') info_log_len -= 1;
-    std.log.scoped(.gl).notice(
-        \\GL {} info log:
-        \\=== begin log ===
-        \\{}
-        \\=== end log ===
-    , .{
+    std.log.scoped(.gl).notice("GL {} info log:\n=== begin log ===\n{}\n=== end log ===", 
+    .{
         @tagName(object_kind),
         info_log[0..@intCast(usize, info_log_len)],
     });

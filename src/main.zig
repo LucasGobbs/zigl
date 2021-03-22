@@ -10,7 +10,7 @@ pub fn main() anyerror!void {
     defer app.destroy();
 
     
-    var default = try ShaderProgram.create("../shader/default");
+    var default = try ShaderProgram.create("../shaders/default");
     defer default.destroy();
 
     const vertex_data = [_]f32{
