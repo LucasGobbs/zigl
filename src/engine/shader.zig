@@ -1,5 +1,6 @@
 const c = @import("../c.zig").c;
 const std = @import("std");
+const math = @import("zlm");
 pub const Shader_type = enum {
     frag,
     vert
@@ -26,7 +27,14 @@ pub const ShaderProgram = struct {
             .fragment = _fragment,
         };
     }
+    pub fn setUniformMat4f(self: ShaderProgram, name: [:0]const u8, mat: math.Mat4) void {
+        c.glUniformMatrix4fv(self.getUniform(name), 1, c.GL_FALSE, @ptrCast([*c]const f32, &mat.fields));
+    }
 
+    fn getUniform(self: ShaderProgram, name: [:0]const u8) c_int {
+        const location = c.glGetUniformLocation(self.id, name);
+        return location;
+    }
     pub fn destroy(self: ShaderProgram) void {
         c.glDeleteShader(self.vertex.id);
         c.glDetachShader(self.id, self.vertex.id);

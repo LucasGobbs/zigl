@@ -1,18 +1,16 @@
 const std = @import("std");
-const App = @import("engine/app.zig").App;
-const ShaderProgram = @import("engine/shader.zig").ShaderProgram;
+const math = @import("zlm");
 const c = @import("c.zig").c;
 
+const App = @import("engine/app.zig").App;
+const ShaderProgram = @import("engine/shader.zig").ShaderProgram;
 const f32Vertex = @import("engine/buffers/vertex.zig").f32Vertex;
 const Index = @import("engine/buffers/index.zig").Index;
 
-const math = @import("zlm");
+
 pub fn main() anyerror!void {
     var app = try App.create("Tesasdst", 640, 480);
     defer app.destroy();
-
-    const identity = math.Mat4.createScale(1.0,1.5,1.0);
-  
 
     var default = try ShaderProgram.create("../shaders/default");
     defer default.destroy();
@@ -45,10 +43,21 @@ pub fn main() anyerror!void {
     
     
     c.glUseProgram(default.id);
-    const identity_id = c.glGetUniformLocation(default.id, "transform");
-    c.glUniformMatrix4fv(identity_id, 1, c.GL_FALSE, @ptrCast([*c]const f32, &identity.fields));
+    
+    
 
+    var model = math.Mat4.createAngleAxis(math.vec3(0.0,0.0,1.0), 0.78);
+    const projection = math.Mat4.createPerspective(0.785375, 640.0 / 480.0, 0.1, 1000);
+    const view = math.Mat4.createTranslationXYZ(0.0, 0.0, 3.0);
+
+    
+
+    var frame: f32 = 0.0;
     mainloop: while (true) {
+        model = math.Mat4.createAngleAxis(math.vec3(0.0,1.0,0.0), @cos(frame) * 3.14);
+        default.setUniformMat4f("model", model);
+        default.setUniformMat4f("projection", projection);
+        default.setUniformMat4f("view", view);
 
         var sdl_event: c.SDL_Event = undefined;
         while (c.SDL_PollEvent(&sdl_event) != 0) {
@@ -81,7 +90,7 @@ pub fn main() anyerror!void {
 
         // c.glDrawArrays(c.GL_TRIANGLES, 0, 3);
         // 
-
+        frame += 0.0005;
 
         app.window.swap();
 
