@@ -1,8 +1,8 @@
 const c = @import("../../c.zig").c;
 
-
+pub const f16Vertex = GenericVertex(f16);
 pub const f32Vertex = GenericVertex(f32);
-
+pub const f64Vertex = GenericVertex(f64);
 
 pub fn GenericVertex(comptime T: type) type {
     return struct {
