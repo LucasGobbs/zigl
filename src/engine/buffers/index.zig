@@ -4,8 +4,6 @@ pub const Index = struct {
     id: c.GLuint,
     data: []c.GLuint,
     
-
-
     pub fn create(data: []c.GLuint) Index {
         var _id: c.GLuint = undefined;
     
