@@ -30,8 +30,8 @@ pub const App = struct {
         //     std.debug.print("BBBBBBBBBBBBBBBBBBBBBBBB",.{});
         //     @panic("erro");
         // }
-    
-
+   
+        
         var _window = try Window.create(title, width, height);
         var _gl_ctx = c.SDL_GL_CreateContext(_window.ptr);
         const  _renderer = try Renderer.create(_window);
@@ -39,6 +39,8 @@ pub const App = struct {
         if(c.gladLoadGLLoader(c.SDL_GL_GetProcAddress) == 0){
             @panic("do something with a");
         }
+        _ = c.SDL_ShowCursor(0);
+        c.glEnable(c.GL_DEPTH_TEST); 
         return App {
             .window = _window,
             .renderer = _renderer,
@@ -67,10 +69,10 @@ pub const Window  = struct {
                 c.SDL_WINDOWPOS_CENTERED, 
                 @intCast(c_int, width), 
                 @intCast(c_int, height), 
-                c.SDL_WINDOW_OPENGL 
+                c.SDL_WINDOW_OPENGL | c.SDL_WINDOW_FULLSCREEN_DESKTOP
             ) orelse return makeError(),
-            .width = width,
-            .height = height,
+            .width = 1920,
+            .height = 1080,
             .isFullScreen = false
         };
     }
