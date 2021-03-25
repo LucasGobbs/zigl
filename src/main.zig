@@ -109,7 +109,11 @@ pub fn main() anyerror!void {
                         else => {},
                     }
                 },
-                c.SDL_MOUSEMOTION => { _ = c.SDL_GetGlobalMouseState(&mouseX,&mouseY);},
+                c.SDL_MOUSEMOTION => {
+                    mouseX += sdl_event.motion.xrel;
+                    mouseY += sdl_event.motion.yrel;
+                },
+                //c.SDL_MOUSEMOTION => { _ = c.SDL_GetGlobalMouseState(&mouseX,&mouseY);},
                 else => {},
             }
         }
@@ -128,21 +132,29 @@ pub fn main() anyerror!void {
         c.glViewport(0, 0, @intCast(c_int, app.window.width), @intCast(c_int, app.window.height));
         c.glClearColor(0.5, 0.5, 1.0, 0.0);
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
-        camera.pan(math.vec2(@intToFloat(f32, mouseX - lastMouseX) * 0.01, @intToFloat(f32, mouseY - lastMouseY) * 0.01));
+        camera.pan(math.vec2(@intToFloat(f32, mouseX - lastMouseX) * 0.001, @intToFloat(f32, mouseY - lastMouseY) * 0.001));
         view = camera.getMatrix();
         model = math.Mat4.createAngleAxis(math.vec3(0.0,0.0,1.0), @sin(frame)*2);
         default.setUniformMat4f("model", model);
         default.setUniformMat4f("projection", projection);
         default.setUniformMat4f("view", view);
 
-        var layout = VertexBufferLayout.create();
-        try layout.addFloat(3);
-        try layout.addFloat(3);
-        defer layout.destroy();
-        var vertex_array = VertexArray.create();
-        vertex_array.addBuffer(triangle_vb, layout);
-
+        const vertex_array = try triangle_vb.layout{}
+            .{
+                .{.float, 3},
+                .{.float, 3},
+            }
+        );
         vertex_array.bind();
+        // var vertex_array = VertexArray.create();
+        // var layout = VertexBufferLayout.create();
+        // try layout.addFloat(3);
+        // try layout.addFloat(3);
+        defer vertex_array.destroy();
+        
+        // vertex_array.addBuffer(triangle_vb, layout);
+
+        
         triangle_ib.bind();
         //triangle_vb.bind();
         c.glDrawElements(c.GL_TRIANGLES, 36, c.GL_UNSIGNED_INT, null);
