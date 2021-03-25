@@ -139,7 +139,7 @@ pub fn main() anyerror!void {
         default.setUniformMat4f("projection", projection);
         default.setUniformMat4f("view", view);
 
-        const vertex_array = try triangle_vb.layout{}
+        const vertex_array = try triangle_vb.layout(
             .{
                 .{.float, 3},
                 .{.float, 3},
