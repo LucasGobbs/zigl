@@ -14,23 +14,7 @@ pub const VertexArray = struct {
         c.glGenVertexArrays(1, &instance.id);
         return instance;
     }
-    pub fn build(buffer: f32Vertex, layout: anytype) !*VertexArray {
-        var va_instance = VertexArray.create();
-        var vl_instance = VertexBufferLayout.create();
-        inline for(layout) |element| {
-            comptime const kind = element[0];
-            comptime const count = element[1];
-            switch(kind){
-                .float => {try vl_instance.addFloat(count);},
-                .uint  => {try vl_instance.addUnsignedInt(count);},
-                .ubyte => {try vl_instance.addUnsignedByte(count);},
-                else => {@panic("Error");},
-            }
-   
-        }
-        va_instance.addBuffer(buffer, vl_instance);
-        return &va_instance;
-    }
+    
     pub fn addBuffer(self: VertexArray, vb: f32Vertex, layout: VertexBufferLayout) void {
         self.bind();
         vb.bind();
