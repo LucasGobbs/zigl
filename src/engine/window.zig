@@ -31,6 +31,11 @@ pub const Window  = struct {
             .isFullScreen = false
         };
     }
+    pub fn clear(self: Window) void {
+        c.glViewport(0, 0, @intCast(c_int, self.width), @intCast(c_int, self.height));
+        c.glClearColor(0.5, 0.5, 1.0, 0.0);
+        c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
+    }
     pub fn swap(self: Window) void {
         c.SDL_GL_SwapWindow(self.ptr);
     }

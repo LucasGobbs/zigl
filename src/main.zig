@@ -129,9 +129,7 @@ pub fn main() anyerror!void {
             camera.move_side(0.005);
         }
 
-        c.glViewport(0, 0, @intCast(c_int, app.window.width), @intCast(c_int, app.window.height));
-        c.glClearColor(0.5, 0.5, 1.0, 0.0);
-        c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
+        app.window.clear();
         camera.pan(math.vec2(@intToFloat(f32, mouseX - lastMouseX) * 0.001, @intToFloat(f32, mouseY - lastMouseY) * 0.001));
         view = camera.getMatrix();
         model = math.Mat4.createAngleAxis(math.vec3(0.0,0.0,1.0), @sin(frame)*2);
