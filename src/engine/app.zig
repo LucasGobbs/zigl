@@ -40,6 +40,9 @@ pub const App = struct {
             @panic("do something with a");
         }
         _ = c.SDL_ShowCursor(0);
+        //c.SDL_SetWindowGrab(_window.ptr, @intToEnum(c.SDL_bool, c.SDL_TRUE));
+        _ = c.SDL_SetRelativeMouseMode(@intToEnum(c.SDL_bool, c.SDL_TRUE));
+        
         c.glEnable(c.GL_DEPTH_TEST); 
         return App {
             .window = _window,
@@ -69,10 +72,10 @@ pub const Window  = struct {
                 c.SDL_WINDOWPOS_CENTERED, 
                 @intCast(c_int, width), 
                 @intCast(c_int, height), 
-                c.SDL_WINDOW_OPENGL | c.SDL_WINDOW_FULLSCREEN_DESKTOP
+                c.SDL_WINDOW_OPENGL //| c.SDL_WINDOW_FULLSCREEN_DESKTOP
             ) orelse return makeError(),
-            .width = 1920,
-            .height = 1080,
+            .width = width,
+            .height = height,
             .isFullScreen = false
         };
     }
