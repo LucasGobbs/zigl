@@ -7,7 +7,7 @@ const ShaderProgram = @import("engine/shader.zig").ShaderProgram;
 const f32Vertex = @import("engine/buffers/vertex.zig").f32Vertex;
 const Index = @import("engine/buffers/index.zig").Index;
 const Camera = @import("engine/camera.zig").Camera;
-const Event = @import("engine/event/event.zig").EventHandler;
+const Event = @import("engine/event/event.zig").KeyboardEvent;
 const VertexBufferLayout = @import("engine/buffers/vertex_array.zig").VertexBufferLayout;
 const VertexArray = @import("engine/buffers/vertex_array.zig").VertexArray;
 
@@ -18,7 +18,7 @@ pub fn main() anyerror!void {
     var event = try Event.create();
     defer event.destroy();
     const stdout = std.io.getStdOut().writer();
-    try stdout.print("Hello, {}!\n", .{event.keys.get(.esc)});
+    
 
     var default = try ShaderProgram.create("../shaders/default");
     defer default.destroy();
@@ -86,7 +86,23 @@ pub fn main() anyerror!void {
     var left: bool = false;
     mainloop: while (true) {
         
-        
+        try event.update();
+        // if (event.isPressed(.esc)) {
+        //     break :mainloop;
+        // }
+        // if (event.isPressed(.w)){
+
+        // }
+        // if (event.isPressed(.a)){
+            
+        // }
+        // if (event.isPressed(.s)){
+            
+        // }
+        // if (event.isPressed(.d)){
+            
+        // }
+        try stdout.print("Hello, {}!\n", .{event.keys.get(.q)});
         var sdl_event: c.SDL_Event = undefined;
         while (c.SDL_PollEvent(&sdl_event) != 0) {
             switch (sdl_event.type) {
