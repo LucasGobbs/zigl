@@ -7,14 +7,14 @@ const ShaderProgram = @import("engine/shader.zig").ShaderProgram;
 const f32Vertex = @import("engine/buffers/vertex.zig").f32Vertex;
 const Index = @import("engine/buffers/index.zig").Index;
 const Camera = @import("engine/camera.zig").Camera;
-
+const Event = @import("engine/event.zig").EventHandler;
 const VertexBufferLayout = @import("engine/buffers/vertex_array.zig").VertexBufferLayout;
 const VertexArray = @import("engine/buffers/vertex_array.zig").VertexArray;
 pub fn main() anyerror!void {
     var app = try App.create("Tesasdst", 640, 480);
     defer app.destroy();
 
-   
+    var event = Event.create();
     var default = try ShaderProgram.create("../shaders/default");
     defer default.destroy();
     var cube_vertex_data = [_] f32 {
@@ -144,10 +144,6 @@ pub fn main() anyerror!void {
             }
         );
         vertex_array.bind();
-        // var vertex_array = VertexArray.create();
-        // var layout = VertexBufferLayout.create();
-        // try layout.addFloat(3);
-        // try layout.addFloat(3);
         defer vertex_array.destroy();
         
         // vertex_array.addBuffer(triangle_vb, layout);
