@@ -1,11 +1,23 @@
 const c = @import("../c.zig").c;
-const Hash = @import("std").ArrayHashMap;
-const test_allocator = std.testing.allocator;
+const Hash = @import("std").AutoHashMap;
+const test_allocator = @import("std").testing.allocator;
 // handle keys
 
 // onPress
 // onHold
 // onDoublePress
+pub const key_code = enum {
+    q,
+    w,
+    a,
+    s,
+    d,
+    left,
+    up,
+    right,
+    down,
+    esc,
+};
 pub const key_state = enum {
     empty,
     pressed,
@@ -18,18 +30,19 @@ pub const Key = struct {
     time: f32 = 0.0,
 };
 pub const EventHandler = struct {
-    keys: Hash(Key),
-    pub fn create() EventHandler {
-        var keys_hash = Hash(Key).init(test_allocator);
+    keys: Hash(key_code, Key),
+    pub fn create() !EventHandler {
+        var keys_hash = Hash(key_code, Key).init(
+            test_allocator,
+        );
 
-        keys_hash.put(c.SDLK_ESCAPE, Key{});
-        keys_hash.put('f', Key{});
-        keys_hash.put('z', Key{});
-
-        keys_hash.put('w', Key{});
-        keys_hash.put('a', Key{});
-        keys_hash.put('s', Key{});
-        keys_hash.put('d', Key{});
+        var index = @enumToInt(key_code.q);
+        const last_key_code = @enumToInt(key_code.esc); 
+        while (index <= last_key_code){
+            try keys_hash.put(@intToEnum(key_code, index), Key{});
+            index += 1;
+        }
+        
         return EventHandler {
             .keys = keys_hash
         };
@@ -71,5 +84,8 @@ pub const EventHandler = struct {
             }
         }
     } 
+    pub fn destroy(self: *EventHandler) void {
+        self.keys.deinit();
+    }
 
 };
