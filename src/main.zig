@@ -103,27 +103,7 @@ pub fn main() anyerror!void {
         if(event.isActive(.d)){
             camera.move_side(-0.005);
         }
-        // if(event.isPressed(.z)){
-        //     c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
-        // }
-        // if(event.isPressed(.x)){
-        //     c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
-        // }
-        // if (event.isPressed(.w)){
-            
-        //     try event.debug(.w);
-        //     // try stdout.print("q: {}\n", .{event.keys.get(.q)});
-        // }
-        // if (event.isPressed(.a)){
-            
-        // }
-        // if (event.isPressed(.s)){
-            
-        // }
-        // if (event.isPressed(.d)){
-            
-        // }
-        //
+
         var sdl_event: c.SDL_Event = undefined;
         while (c.SDL_PollEvent(&sdl_event) != 0) {
             switch (sdl_event.type) {
@@ -159,18 +139,7 @@ pub fn main() anyerror!void {
                 else => {},
             }
         }
-        if(up){
-            camera.move_straight(0.005);
-        } else if(down){
-            camera.move_straight(-0.005);
-        }
-
-        if(right){
-            camera.move_side(-0.005);
-        }else if(left){
-            camera.move_side(0.005);
-        }
-
+ 
         app.window.clear();
         camera.pan(math.vec2(@intToFloat(f32, mouseX - lastMouseX) * 0.001, @intToFloat(f32, mouseY - lastMouseY) * 0.001));
         view = camera.getMatrix();
