@@ -2,7 +2,7 @@ const c = @import("../c.zig").c;
 const Hash = @import("std").AutoHashMap;
 const test_allocator = @import("std").testing.allocator;
 const event_backend = @import("./sdl_event_backend.zig");
-
+const std = @import("std");
 pub const key_code = enum {
     q,
     w,
@@ -25,15 +25,38 @@ pub const key_state = enum {
 
 pub const Key = struct {
     current_state: key_state = .empty,
-    last_state: key_state = .empty,
-
     current_time: f32 = 0.0,
+
+
+    last_state: key_state = .empty,
     last_time: f32 = 0.0,
+
+    pub fn consume(self: *Key) key_state {
+        const old_state = self.current_state;
+        switch(self.current_state){
+            .holded => {}, // Because hold events cannot be consumed
+            else => {self.changeState(.empty, 0.0);}
+        }
+        return old_state;
+    }
     pub fn changeState(self: *Key, new_state: key_state, new_time: f32) void {
         self.save();
-        self.current_state = new_state;
+        switch(new_state){
+            .pressed => {
+                if(self.current_state == .pressed){
+                    self.current_state = .holded;
+                } else if(self.current_state != .holded){
+                     self.current_state = .pressed;
+                } 
+            },
+            else => {
+                self.current_state = new_state;
+            },
+        }
+        
         self.current_time = new_time;
     }
+    
     fn save(self: *Key) void {
         self.last_state = self.current_state;
         self.last_time = self.current_time;
@@ -57,61 +80,43 @@ pub const KeyboardEvent = struct {
             .keys = keys_hash
         };
     }
-    pub fn isPressed(self: *KeyboardEvent, code: key_code) bool {
+    pub fn debug(self: KeyboardEvent, code: key_code) !void {
+        const stdout = std.io.getStdOut().writer();
+        const key = self.keys.get(code);
+        try stdout.print("Key {}: ", .{code});
+        try stdout.print("\n  Current  -> State: {}\t| Time: {d:.2}", .{key.?.current_state, key.?.current_time});
+        try stdout.print("\n  Last     -> State: {}\t| Time: {d:.2}\n\n", .{key.?.last_state, key.?.last_time});
+        
+    }
+    pub fn getKeyState(self: *KeyboardEvent, code: key_code) key_state{
         var key = self.keys.get(code);
-        return key.?.state == key_state.pressed;
+        var state = key.?.consume();
+        return state;
+    } 
+    pub fn isPressed(self: *KeyboardEvent, code: key_code) bool {
+        var state = self.getKeyState(code);
+        return state == key_state.pressed;
+    }
+    pub fn isHolded(self: *KeyboardEvent, code: key_code) bool {
+        var state = self.getKeyState(code);
+        return state == key_state.holded;
+    }
+    //Pressed or holded
+    pub fn isActive(self: *KeyboardEvent, code: key_code) bool {
+        var state = self.getKeyState(code);
+        return state == key_state.pressed or state == key_state.holded;
     }
 
-    pub fn changeState(self: *KeyboardEvent, code: key_code, new_state: key_state) void {
+    pub fn changeState(self: *KeyboardEvent, code: key_code, new_state: key_state, time: f32) void {
         var old_key = self.keys.get(code);
-        const old_state = old_key.?.state;
-        switch(new_state){
-            .pressed => {
-
-            },
-        }
+        old_key.?.changeState(new_state, time);
         self.keys.put(code, old_key.?) catch |err|{
             @panic("aa");
         };
 
     }
-    pub fn update(self: *KeyboardEvent, ) !void {
-        event_backend.update(self);
-        // var sdl_event: c.SDL_Event = undefined;
-        // while (c.SDL_PollEvent(&sdl_event) != 0) {
-        //     switch (sdl_event.type) {
-        //         c.SDL_QUIT => break :mainloop,
-        //         c.SDL_KEYDOWN => {
-        //             switch (sdl_event.key.keysym.sym) {
-        //                 c.SDLK_ESCAPE => break :mainloop,
-        //                 'f' => app.window.toggleFullScreen(),
-        //                 'z' => c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE),
-        //                 'x' => c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL),
-
-        //                 's' => {down = true;},
-        //                 'w' => {up = true;},
-        //                 'a' => {left = true;},
-        //                 'd' => {right = true;},
-        //                 else => {},
-        //             }
-        //         },
-        //         c.SDL_KEYUP => {
-        //             switch (sdl_event.key.keysym.sym) {
-        //                 's' => {down = false;},
-        //                 'w' => {up = false;},
-        //                 'a' => {left = false;},
-        //                 'd' => {right = false;},
-        //                 else => {},
-        //             }
-        //         },
-        //         c.SDL_MOUSEMOTION => {
-        //             mouseX += sdl_event.motion.xrel;
-        //             mouseY += sdl_event.motion.yrel;
-        //         },
-        //         //c.SDL_MOUSEMOTION => { _ = c.SDL_GetGlobalMouseState(&mouseX,&mouseY);},
-        //         else => {},
-        //     }
-        // }
+    pub fn update(self: *KeyboardEvent, time: f32 ) !void {
+        event_backend.update(self, time);
     } 
     pub fn destroy(self: *KeyboardEvent) void {
         self.keys.deinit();

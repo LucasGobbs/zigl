@@ -86,12 +86,33 @@ pub fn main() anyerror!void {
     var left: bool = false;
     mainloop: while (true) {
         
-        try event.update();
-        // if (event.isPressed(.esc)) {
-        //     break :mainloop;
+        try event.update(frame);
+        if (event.isPressed(.esc)) {
+            break :mainloop;
+        }
+      
+        if(event.isActive(.w)){
+            camera.move_straight(0.005);
+        }
+        if(event.isActive(.a)){
+            camera.move_side(0.005);
+        }
+        if(event.isActive(.s)){
+            camera.move_straight(-0.005);
+        }
+        if(event.isActive(.d)){
+            camera.move_side(-0.005);
+        }
+        // if(event.isPressed(.z)){
+        //     c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
+        // }
+        // if(event.isPressed(.x)){
+        //     c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
         // }
         // if (event.isPressed(.w)){
-
+            
+        //     try event.debug(.w);
+        //     // try stdout.print("q: {}\n", .{event.keys.get(.q)});
         // }
         // if (event.isPressed(.a)){
             
@@ -102,7 +123,7 @@ pub fn main() anyerror!void {
         // if (event.isPressed(.d)){
             
         // }
-        try stdout.print("Hello, {}!\n", .{event.keys.get(.q)});
+        //
         var sdl_event: c.SDL_Event = undefined;
         while (c.SDL_PollEvent(&sdl_event) != 0) {
             switch (sdl_event.type) {
@@ -183,5 +204,6 @@ pub fn main() anyerror!void {
         app.window.swap();
         lastMouseX = mouseX;
         lastMouseY = mouseY;
+       // c.SDL_Delay(400);
     }
 }

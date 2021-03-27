@@ -33,15 +33,16 @@ fn to_event_key(key: c.SDL_Keycode)  event.key_code {
     };
 }
 
-pub fn update(handler: *event.KeyboardEvent) void {
+pub fn update(handler: *event.KeyboardEvent, time: f32) void {
     var sdl_event: c.SDL_Event = undefined;
     while (c.SDL_PollEvent(&sdl_event) != 0) {
+        const _key_event = sdl_event.key.keysym.sym;
         switch (sdl_event.type) {
             c.SDL_KEYDOWN => {
-                handler.changeState(to_event_key(sdl_event.key.keysym.sym), .pressed);
+                handler.changeState(to_event_key(_key_event), .pressed, time);
             },
             c.SDL_KEYUP =>{
-                handler.changeState(to_event_key(sdl_event.key.keysym.sym), .released);
+                handler.changeState(to_event_key(_key_event), .released, time);
             },
             // c.SDL_KEYUP => {
             //     switch (sdl_event.key.keysym.sym) {
