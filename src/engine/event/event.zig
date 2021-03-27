@@ -22,9 +22,22 @@ pub const key_state = enum {
     released,
     double_pressed,
 };
+
 pub const Key = struct {
-    state: key_state = .empty,
-    time: f32 = 0.0,
+    current_state: key_state = .empty,
+    last_state: key_state = .empty,
+
+    current_time: f32 = 0.0,
+    last_time: f32 = 0.0,
+    pub fn changeState(self: *Key, new_state: key_state, new_time: f32) void {
+        self.save();
+        self.current_state = new_state;
+        self.current_time = new_time;
+    }
+    fn save(self: *Key) void {
+        self.last_state = self.current_state;
+        self.last_time = self.current_time;
+    }
 };
 pub const KeyboardEvent = struct {
     keys: Hash(key_code, Key),
@@ -51,7 +64,12 @@ pub const KeyboardEvent = struct {
 
     pub fn changeState(self: *KeyboardEvent, code: key_code, new_state: key_state) void {
         var old_key = self.keys.get(code);
-        old_key.?.state = new_state;
+        const old_state = old_key.?.state;
+        switch(new_state){
+            .pressed => {
+
+            },
+        }
         self.keys.put(code, old_key.?) catch |err|{
             @panic("aa");
         };
