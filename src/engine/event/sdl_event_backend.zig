@@ -34,16 +34,24 @@ fn to_event_key(key: c.SDL_Keycode)  event.key_code {
 }
 
 pub fn update(handler: *event.KeyboardEvent, time: f32) void {
-    var sdl_event: c.SDL_Event = undefined;
-    while (c.SDL_PollEvent(&sdl_event) != 0) {
-        const _key_event = sdl_event.key.keysym.sym;
-        switch (sdl_event.type) {
+    var sdl_event: [10]c.SDL_Event = undefined;
+    
+    c.SDL_PumpEvents();
+    const count = c.SDL_PeepEvents(&sdl_event, 10, @intToEnum(c.SDL_eventaction, c.SDL_PEEKEVENT), c.SDL_FIRSTEVENT, c.SDL_LASTEVENT );
+    c.SDL_LogInfo(c.SDL_LOG_CATEGORY_APPLICATION, "Count %d", count);
+    if(count != 0){
+        const _key_event = sdl_event[0].key.keysym.sym;
+        switch (sdl_event[0].type) {
             c.SDL_KEYDOWN => {
                 handler.changeState(to_event_key(_key_event), .pressed, time);
             },
             c.SDL_KEYUP =>{
                 handler.changeState(to_event_key(_key_event), .released, time);
             },
+            c.SDL_MOUSEBUTTONDOWN=>{
+               // c.SDL_LogInfo(c.SDL_LOG_CATEGORY_APPLICATION, "[SDL]Mouse Down: %d x %d", sdl_event.button.x, sdl_event.button.y);
+            },
+        
             // c.SDL_KEYUP => {
             //     switch (sdl_event.key.keysym.sym) {
             //         's' => {down = false;},
@@ -56,5 +64,32 @@ pub fn update(handler: *event.KeyboardEvent, time: f32) void {
             else => {},
         }
     }
+    
+
+    // while (c.SDL_PollEvent(&sdl_event) != 0) {
+    //     const _key_event = sdl_event.key.keysym.sym;
+    //     switch (sdl_event.type) {
+    //         c.SDL_KEYDOWN => {
+    //             handler.changeState(to_event_key(_key_event), .pressed, time);
+    //         },
+    //         c.SDL_KEYUP =>{
+    //             handler.changeState(to_event_key(_key_event), .released, time);
+    //         },
+    //         c.SDL_MOUSEBUTTONDOWN=>{
+    //             c.SDL_LogInfo(c.SDL_LOG_CATEGORY_APPLICATION, "[SDL]Mouse Down: %d x %d", sdl_event.button.x, sdl_event.button.y);
+    //         },
+        
+    //         // c.SDL_KEYUP => {
+    //         //     switch (sdl_event.key.keysym.sym) {
+    //         //         's' => {down = false;},
+    //         //         'w' => {up = false;},
+    //         //         'a' => {left = false;},
+    //         //         'd' => {right = false;},
+    //         //         else => {},
+    //         //     }
+    //         // },
+    //         else => {},
+    //     }
+    // }
     
 }
