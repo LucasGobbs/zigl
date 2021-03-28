@@ -124,3 +124,9 @@ pub const KeyboardEvent = struct {
 
 };
 
+pub const Mouse = struct {
+    x: f32,
+    y: f32,
+};
+
+
