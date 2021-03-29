@@ -66,10 +66,10 @@ pub const Key = struct {
         self.last.time = self.current.time;
     }
 };
-
-pub const KeyboardEvent = struct {
+pub const KeyHash = struct {
     keys: Hash(key_code, Key),
-    pub fn create() !KeyboardEvent {
+    pub fn create() !KeyHash {
+
         var keys_hash = Hash(key_code, Key).init(
             test_allocator,
         );
@@ -80,6 +80,20 @@ pub const KeyboardEvent = struct {
             try keys_hash.put(@intToEnum(key_code, index), Key{});
             index += 1;
         }
+
+        return KeyHash {
+            .keys = keys_hash
+        };
+    }
+    // get
+    // add 
+    // remove
+    
+};
+pub const KeyboardEvent = struct {
+    keys: Hash(key_code, Key),
+    pub fn create() !KeyboardEvent {
+        var keys_hash = try KeyHash.create();
         
         return KeyboardEvent {
             .keys = keys_hash
