@@ -85,13 +85,36 @@ pub const KeyHash = struct {
             .keys = keys_hash
         };
     }
+
+    pub fn get(self: *KeyHash, code: key_code) Key {
+        const _key = self.keys.get(code);
+        if(_key) |key| {
+            return key;
+        } else {
+            return self.add(code);
+
+        }
+    } 
+    pub fn add(self: *KeyHash, code: key_code) Key {
+        const key = Key{};
+        self.keys.put(code, key) catch |err|{
+            @panic("Aaa");
+        };
+        return key;
+    }
+    pub fn deinit(self: *KeyHash) void {
+        self.keys.deinit();
+    }
+    // pub fn update(self: *KeyHash, code: key_code, data: Key) Key {
+
+    // }
     // get
     // add 
     // remove
     
 };
 pub const KeyboardEvent = struct {
-    keys: Hash(key_code, Key),
+    keys: KeyHash,
     pub fn create() !KeyboardEvent {
         var keys_hash = try KeyHash.create();
         
@@ -109,7 +132,7 @@ pub const KeyboardEvent = struct {
     }
     pub fn getKeyState(self: *KeyboardEvent, code: key_code) key_state{
         var key = self.keys.get(code);
-        var state = key.?.consume();
+        var state = key.consume();
         return state;
     } 
     pub fn isPressed(self: *KeyboardEvent, code: key_code) bool {
@@ -128,8 +151,8 @@ pub const KeyboardEvent = struct {
 
     pub fn changeState(self: *KeyboardEvent, code: key_code, new_state: key_state, time: f32) void {
         var old_key = self.keys.get(code);
-        old_key.?.changeState(new_state, time);
-        self.keys.put(code, old_key.?) catch |err|{
+        old_key.changeState(new_state, time);
+        self.keys.keys.put(code, old_key) catch |err|{
             @panic("aa");
         };
 
