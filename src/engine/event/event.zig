@@ -4,17 +4,20 @@ const test_allocator = @import("std").testing.allocator;
 const event_backend = @import("./sdl_event_backend.zig");
 const std = @import("std");
 pub const key_code = enum {
-    q,
-    w,
-    a,
-    s,
-    d,
-    left,
-    up,
-    right,
-    down,
-    esc,
+    start_enum,
+
+    esc,       f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, printscreen, 
+    quote,         d1, d2, d3, d4, d5, d6, d7, d8, d9, d0, underline, plus,
+    tab,              q, w, e, r, t, y, u, i, o, p, enter,
+    capslock,          a, s, d, f, g, h, j,  k,  l, 
+    lshift, back_slash, z, x, c, v, b, n, m, comma, less_than, plus_than, dot, rshift,
+    lctrl, lalt,                space,           ralt,                          rctrl,
+
+    left, right, up, down,
+
+    end_enum
 };
+
 pub const key_state = enum {
     empty,
     pressed,
@@ -23,17 +26,18 @@ pub const key_state = enum {
     double_pressed,
 };
 
+pub const StateTracker = struct{
+    state: key_state = .empty,
+    time: f32 = 0.0,
+};
+
 pub const Key = struct {
-    current_state: key_state = .empty,
-    current_time: f32 = 0.0,
-
-
-    last_state: key_state = .empty,
-    last_time: f32 = 0.0,
+    current: StateTracker = StateTracker{},
+    last: StateTracker = StateTracker{},
 
     pub fn consume(self: *Key) key_state {
-        const old_state = self.current_state;
-        switch(self.current_state){
+        const old_state = self.current.state;
+        switch(self.current.state){
             .holded => {}, // Because hold events cannot be consumed
             else => {self.changeState(.empty, 0.0);}
         }
@@ -43,25 +47,26 @@ pub const Key = struct {
         self.save();
         switch(new_state){
             .pressed => {
-                if(self.current_state == .pressed){
-                    self.current_state = .holded;
-                } else if(self.current_state != .holded){
-                     self.current_state = .pressed;
+                if(self.current.state == .pressed){
+                    self.current.state = .holded;
+                } else if(self.current.state != .holded){
+                     self.current.state = .pressed;
                 } 
             },
             else => {
-                self.current_state = new_state;
+                self.current.state = new_state;
             },
         }
         
-        self.current_time = new_time;
+        self.current.time = new_time;
     }
     
     fn save(self: *Key) void {
-        self.last_state = self.current_state;
-        self.last_time = self.current_time;
+        self.last.state = self.current.state;
+        self.last.time = self.current.time;
     }
 };
+
 pub const KeyboardEvent = struct {
     keys: Hash(key_code, Key),
     pub fn create() !KeyboardEvent {
@@ -69,8 +74,8 @@ pub const KeyboardEvent = struct {
             test_allocator,
         );
 
-        var index = @enumToInt(key_code.q);
-        const last_key_code = @enumToInt(key_code.esc); 
+        var index = @enumToInt(key_code.start_enum);
+        const last_key_code = @enumToInt(key_code.end_enum); 
         while (index <= last_key_code){
             try keys_hash.put(@intToEnum(key_code, index), Key{});
             index += 1;
@@ -84,8 +89,8 @@ pub const KeyboardEvent = struct {
         const stdout = std.io.getStdOut().writer();
         const key = self.keys.get(code);
         try stdout.print("Key {}: ", .{code});
-        try stdout.print("\n  Current  -> State: {}\t| Time: {d:.2}", .{key.?.current_state, key.?.current_time});
-        try stdout.print("\n  Last     -> State: {}\t| Time: {d:.2}\n\n", .{key.?.last_state, key.?.last_time});
+        try stdout.print("\n  Current  -> State: {}\t| Time: {d:.2}", .{key.?.current.state, key.?.current.time});
+        try stdout.print("\n  Last     -> State: {}\t| Time: {d:.2}\n\n", .{key.?.last.state, key.?.last.time});
         
     }
     pub fn getKeyState(self: *KeyboardEvent, code: key_code) key_state{

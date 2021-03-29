@@ -6,9 +6,35 @@ fn to_event_key(key: c.SDL_Keycode)  event.key_code {
     return switch(key) {
         c.SDLK_q => .q,
         c.SDLK_w => .w,
+        c.SDLK_e => .e,
+        c.SDLK_r => .r,
+        c.SDLK_t => .t,
+        c.SDLK_y => .y,
+        c.SDLK_u => .u,
+        c.SDLK_i => .i,
+        c.SDLK_o => .o,
+        c.SDLK_p => .p,
+
         c.SDLK_a => .a,
         c.SDLK_s => .s,
         c.SDLK_d => .d,
+        c.SDLK_f => .f,
+        c.SDLK_g => .g,
+        c.SDLK_h => .h,
+        c.SDLK_j => .j,
+        c.SDLK_k => .k,
+        c.SDLK_l => .l,
+
+        c.SDLK_z => .z,
+        c.SDLK_x => .x,
+        c.SDLK_c => .c,
+        c.SDLK_v => .v,
+        c.SDLK_b => .b,
+        c.SDLK_n => .n,
+        c.SDLK_m => .m,
+      
+
+
         c.SDLK_LEFT => .left,
         c.SDLK_DOWN => .down,
         c.SDLK_RIGHT => .right,
