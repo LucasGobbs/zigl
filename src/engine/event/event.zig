@@ -1,8 +1,10 @@
-const c = @import("../c.zig").c;
+const c = @import("../../c.zig").c;
 const Hash = @import("std").AutoHashMap;
 const test_allocator = @import("std").testing.allocator;
 const event_backend = @import("./sdl_event_backend.zig");
 const std = @import("std");
+
+
 pub const key_code = enum {
     start_enum,
 
@@ -34,34 +36,51 @@ pub const StateTracker = struct{
 pub const Key = struct {
     current: StateTracker = StateTracker{},
     last: StateTracker = StateTracker{},
-
+    // second_last: StateTracker = StateTracker{},
     pub fn consume(self: *Key) key_state {
         const old_state = self.current.state;
         switch(self.current.state){
             .holded => {}, // Because hold events cannot be consumed
-            else => {self.changeState(.empty, 0.0);}
+            else => {self.changeState(.empty, 0.0, 0.0);}
         }
         return old_state;
     }
-    pub fn changeState(self: *Key, new_state: key_state, new_time: f32) void {
+    fn toState(self: *Key, new_state: key_state, new_time: f32) void {
         self.save();
+        self.current.state = new_state;
+        self.current.time = new_time;
+    }
+    pub fn changeState(self: *Key, new_state: key_state, new_time: f32, double_press_limit: f32) void {
+        const stdout = std.io.getStdOut().writer();
         switch(new_state){
             .pressed => {
                 if(self.current.state == .pressed){
-                    self.current.state = .holded;
+                    self.toState(.holded, new_time);
+
+                //double press is when you press -> release -> press
+                } else if (self.current.state == .released and self.last.state == .pressed){
+                    
+                    if(new_time - self.last.time < double_press_limit){
+                        self.toState(.double_pressed, new_time);
+                    } else {
+                        self.toState(.pressed, new_time);
+                    }
                 } else if(self.current.state != .holded){
-                     self.current.state = .pressed;
+                    self.toState(.pressed, new_time);
                 } 
+                
             },
             else => {
-                self.current.state = new_state;
+                self.toState(new_state, new_time);
             },
         }
-        
-        self.current.time = new_time;
+    
     }
     
     fn save(self: *Key) void {
+        // self.second_last.state = self.last.state;
+        // self.second_last.time = self.second_last.time;
+
         self.last.state = self.current.state;
         self.last.time = self.current.time;
     }
@@ -115,6 +134,7 @@ pub const KeyHash = struct {
 };
 pub const KeyboardEvent = struct {
     keys: KeyHash,
+
     pub fn create() !KeyboardEvent {
         var keys_hash = try KeyHash.create();
         
@@ -122,12 +142,12 @@ pub const KeyboardEvent = struct {
             .keys = keys_hash
         };
     }
-    pub fn debug(self: KeyboardEvent, code: key_code) !void {
-        const stdout = std.io.getStdOut().writer();
-        const key = self.keys.get(code);
-        try stdout.print("Key {}: ", .{code});
-        try stdout.print("\n  Current  -> State: {}\t| Time: {d:.2}", .{key.?.current.state, key.?.current.time});
-        try stdout.print("\n  Last     -> State: {}\t| Time: {d:.2}\n\n", .{key.?.last.state, key.?.last.time});
+    pub fn debug(self: *KeyboardEvent, code: key_code) !void {
+        // const stdout = std.io.getStdOut().writer();
+        // const key = self.keys.get(code);
+        // try stdout.print("Key {}: ", .{code});
+        // try stdout.print("\n  Current  -> State: {}\t| Time: {d:.2}", .{key.current.state, key.current.time});
+        // try stdout.print("\n  Last     -> State: {}\t| Time: {d:.2}\n\n", .{key.last.state, key.last.time});
         
     }
     pub fn getKeyState(self: *KeyboardEvent, code: key_code) key_state{
@@ -135,6 +155,12 @@ pub const KeyboardEvent = struct {
         var state = key.consume();
         return state;
     } 
+
+    pub fn isDoublePressed(self: *KeyboardEvent, code: key_code) bool {
+        var state = self.getKeyState(code);
+        return state == key_state.double_pressed;
+    }
+
     pub fn isPressed(self: *KeyboardEvent, code: key_code) bool {
         var state = self.getKeyState(code);
         return state == key_state.pressed;
@@ -146,12 +172,12 @@ pub const KeyboardEvent = struct {
     //Pressed or holded
     pub fn isActive(self: *KeyboardEvent, code: key_code) bool {
         var state = self.getKeyState(code);
-        return state == key_state.pressed or state == key_state.holded;
+        return state == key_state.pressed or state == key_state.holded or state == key_state.double_pressed;
     }
 
     pub fn changeState(self: *KeyboardEvent, code: key_code, new_state: key_state, time: f32) void {
         var old_key = self.keys.get(code);
-        old_key.changeState(new_state, time);
+        old_key.changeState(new_state, time, 0.05);
         self.keys.keys.put(code, old_key) catch |err|{
             @panic("aa");
         };
