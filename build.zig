@@ -21,6 +21,9 @@ pub fn build(b: *std.build.Builder) void {
     exe.addCSourceFile("deps/glad/glad.c", &[_][]const u8{"-std=c99"});
     //exe.linkSystemLibrary("glad");
 
+    // stb_image
+    exe.addIncludeDir("deps/stb/");
+    exe.addCSourceFile("deps/stb/stb_image.c", &[_][]const u8{"-std=c99"});
 
     // Zigs glm
     exe.addPackagePath("zlm", "deps/zlm/zlm.zig");
