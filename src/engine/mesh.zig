@@ -1,18 +1,17 @@
 
+const math = @import("zlm");
 
-
+pub const Vertex = packed struct {
+    pos: math.Vec3,
+    normal: ?math.Vec3,
+    uv: ?math.Vec2,
+    color: ?math.Vec3,
+};
 
 pub const Mesh = struct {
     // vertices
     // normals
     // uv
-    verts: []f32,
-    normals: []f32,
-    uv: []f32,
-    pub fn create() Mesh {
-
-    }
-    pub fn fromFile() Mesh {
-        
-    }
+    vertices: []Vertex,
+    indices: []u32,
 };
