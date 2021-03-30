@@ -23,17 +23,17 @@ pub fn main() anyerror!void {
     var default = try ShaderProgram.create("../shaders/default");
     defer default.destroy();
     var cube_vertex_data = [_] f32 {
-        -1, -1, -1, 1.0, 0.0, 0.0, 
-        1, -1, -1, 1.0, 0.0, 0.0, 
+        -1, -1, -1, 1.0, 0.0, 0.0, 1.0, 1.0, // 0
+        1, -1, -1, 1.0, 0.0, 0.0,  1.0, 0.0, // 1
 
-        1, 1, -1, 0.0, 1.0, 0.0, 
-        -1, 1, -1, 1.0, 0.0, 0.0, 
+        1, 1, -1, 0.0, 1.0, 0.0, 1.0, 1.0,  // 2
+        -1, 1, -1, 1.0, 0.0, 0.0, 0.0, 1.0,  // 3
 
-        -1, -1, 1, 0.0, 1.0, 0.0, 
-        1, -1, 1, 0.0, 1.0, 0.0, 
+        -1, -1, 1, 0.0, 1.0, 0.0, 1.0, 1.0, // 4
+        1, -1, 1, 0.0, 1.0, 0.0, 1.0, 0.0, // 5
 
-        1, 1, 1, 0.0, 1.0, 0.0, 
-        -1, 1, 1, 0.0, 1.0, 0.0
+        1, 1, 1, 0.0, 1.0, 0.0, 0.0, 1.0,
+        -1, 1, 1, 0.0, 1.0, 0.0, 0.0, 1.0,
     };
     var cube_index_data = [_] u32 {
         0, 1, 3, 3, 1, 2,
@@ -84,9 +84,46 @@ pub fn main() anyerror!void {
     var down: bool = false;
     var right: bool = false;
     var left: bool = false;
+
+    var lastTime: u32 = 0;
+    var currentTime: u32 = 0;
+
+
+    //image
+    var width: c_int = undefined;
+    var height: c_int = undefined;
+    var channel_count: c_int = undefined;
+    var data = c.stbi_load("images/testimg.png", &width, &height, &channel_count, 0);
+
+    if (data == null) {
+        try stdout.print("Reason: {s}\n", .{c.stbi_failure_reason()});
+        @panic("Failed to load texture\n");
+    }
+    var texture: u32 = undefined;
+    c.glGenTextures(1, &texture);
+    c.glBindTexture(c.GL_TEXTURE_2D, texture);
+    // set the texture wrapping parameters
+    c.glTexParameteri(c.GL_TEXTURE_2D, c.GL_TEXTURE_WRAP_S, c.GL_REPEAT);
+    c.glTexParameteri(c.GL_TEXTURE_2D, c.GL_TEXTURE_WRAP_T, c.GL_REPEAT);
+    // set texture filtering parameters
+    c.glTexParameteri(c.GL_TEXTURE_2D, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
+    c.glTexParameteri(c.GL_TEXTURE_2D, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
+
+    c.glTexImage2D(c.GL_TEXTURE_2D, 0, c.GL_RGB, width, height, 0, c.GL_RGB, c.GL_UNSIGNED_BYTE,
+            data);
+    c.glGenerateMipmap(c.GL_TEXTURE_2D);
+    c.stbi_image_free(data);
+
+
+
+
+
+
     mainloop: while (true) {
+        // try event.debug(.w);
+        try stdout.print(".w: {}\n", .{@tagName(event.keys.get(.d).current.state)});
         
-        try event.update(frame);
+        try event.update(@intToFloat(f32, currentTime)/1000.0);
         if (event.isPressed(.esc)) {
             break :mainloop;
         }
@@ -152,8 +189,10 @@ pub fn main() anyerror!void {
             .{
                 .{.float, 3},
                 .{.float, 3},
+                .{.float, 2},
             }
         );
+        c.glBindTexture(c.GL_TEXTURE_2D, texture);
         vertex_array.bind();
         defer vertex_array.destroy();
         
@@ -173,6 +212,11 @@ pub fn main() anyerror!void {
         app.window.swap();
         lastMouseX = mouseX;
         lastMouseY = mouseY;
-       // c.SDL_Delay(400);
+        //c.SDL_Delay(400);
+        currentTime = c.SDL_GetTicks();
+        if (currentTime > lastTime + 1000) {
+           // c.SDL_LogInfo(c.SDL_LOG_CATEGORY_APPLICATION, "[time] %d\n", currentTime);
+            lastTime = currentTime;
+        }
     }
 }
