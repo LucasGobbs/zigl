@@ -10,7 +10,7 @@ const Camera = @import("engine/camera.zig").Camera;
 const Event = @import("engine/event/event.zig").KeyboardEvent;
 const VertexBufferLayout = @import("engine/buffers/vertex_array.zig").VertexBufferLayout;
 const VertexArray = @import("engine/buffers/vertex_array.zig").VertexArray;
-
+const Texture = @import("engine/texture.zig").Texture;
 pub fn main() anyerror!void {
     var app = try App.create("Tesasdst", 640, 480);
     defer app.destroy();
@@ -80,43 +80,14 @@ pub fn main() anyerror!void {
     var mouseY: i32 = 0;
     var lastMouseX: i32 = 0;
     var lastMouseY: i32 = 0;
-    var up: bool = false;
-    var down: bool = false;
-    var right: bool = false;
-    var left: bool = false;
+
 
     var lastTime: u32 = 0;
     var currentTime: u32 = 0;
 
 
     //image
-    var width: c_int = undefined;
-    var height: c_int = undefined;
-    var channel_count: c_int = undefined;
-    var data = c.stbi_load("images/testimg.png", &width, &height, &channel_count, 0);
-
-    if (data == null) {
-        try stdout.print("Reason: {s}\n", .{c.stbi_failure_reason()});
-        @panic("Failed to load texture\n");
-    }
-    var texture: u32 = undefined;
-    c.glGenTextures(1, &texture);
-    c.glBindTexture(c.GL_TEXTURE_2D, texture);
-    // set the texture wrapping parameters
-    c.glTexParameteri(c.GL_TEXTURE_2D, c.GL_TEXTURE_WRAP_S, c.GL_REPEAT);
-    c.glTexParameteri(c.GL_TEXTURE_2D, c.GL_TEXTURE_WRAP_T, c.GL_REPEAT);
-    // set texture filtering parameters
-    c.glTexParameteri(c.GL_TEXTURE_2D, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
-    c.glTexParameteri(c.GL_TEXTURE_2D, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
-
-    c.glTexImage2D(c.GL_TEXTURE_2D, 0, c.GL_RGB, width, height, 0, c.GL_RGB, c.GL_UNSIGNED_BYTE,
-            data);
-    c.glGenerateMipmap(c.GL_TEXTURE_2D);
-    c.stbi_image_free(data);
-
-
-
-
+    var texture = try Texture.create("images/dirt.png");
 
 
     mainloop: while (true) {
@@ -151,23 +122,10 @@ pub fn main() anyerror!void {
                         'f' => app.window.toggleFullScreen(),
                         'z' => c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE),
                         'x' => c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL),
+                        else => {},
+                    }
+                },
 
-                        's' => {down = true;},
-                        'w' => {up = true;},
-                        'a' => {left = true;},
-                        'd' => {right = true;},
-                        else => {},
-                    }
-                },
-                c.SDL_KEYUP => {
-                    switch (sdl_event.key.keysym.sym) {
-                        's' => {down = false;},
-                        'w' => {up = false;},
-                        'a' => {left = false;},
-                        'd' => {right = false;},
-                        else => {},
-                    }
-                },
                 c.SDL_MOUSEMOTION => {
                     mouseX += sdl_event.motion.xrel;
                     mouseY += sdl_event.motion.yrel;
@@ -192,7 +150,7 @@ pub fn main() anyerror!void {
                 .{.float, 2},
             }
         );
-        c.glBindTexture(c.GL_TEXTURE_2D, texture);
+        texture.bind();
         vertex_array.bind();
         defer vertex_array.destroy();
         
