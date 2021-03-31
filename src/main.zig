@@ -111,6 +111,12 @@ pub fn main() anyerror!void {
         if(event.isActive(.d)){
             camera.move_side(-0.005);
         }
+        if(event.isPressed(.z)){
+            c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
+        }
+        if(event.isPressed(.x)){
+            c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
+        }
 
         var sdl_event: c.SDL_Event = undefined;
         while (c.SDL_PollEvent(&sdl_event) != 0) {
@@ -119,9 +125,6 @@ pub fn main() anyerror!void {
                 c.SDL_KEYDOWN => {
                     switch (sdl_event.key.keysym.sym) {
                         c.SDLK_ESCAPE => break :mainloop,
-                        'f' => app.window.toggleFullScreen(),
-                        'z' => c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE),
-                        'x' => c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL),
                         else => {},
                     }
                 },
