@@ -1,3 +1,6 @@
 [submodule "deps/zlm"]
 	path = deps/zlm
 	url = https://github.com/ziglibs/zlm.git
+[submodule "deps/im3d"]
+	path = deps/im3d
+	url = https://github.com/john-chapman/im3d.git
